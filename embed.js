@@ -2,7 +2,6 @@ let width = d3.select("body").style("width");
 let height = d3.select("body").style("height");
 let xscale = d3.scaleLinear().domain([-1, 1]).range([0, width]);
 let yscale = d3.scaleLinear().domain([-1, 1]).range([0, height]);
-
 function normal() {
     var u = 0, v = 0;
     while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
@@ -25,7 +24,7 @@ let generateRandomData = function(nb){
     }
     return data;
 }
-let data = generateRandomData(10);
+let data = generateRandomData(100);
 let svg = d3.select("svg").attr('width', width).attr('height', height);
 let circle = svg.selectAll('circle').data(data);
 circle.enter().append('circle')
@@ -42,6 +41,7 @@ let W = nj_normal([X.shape[1], embed_size]).multiply(0.01);
 let DW_sqr = nj.zeros(W.shape);
 let alpha = 0.01;
 let batch_size = X.shape[0];
+
 let one_epoch = function(W){
     for(i = 0; i < X.shape[0]; i+=batch_size){
         let start = i;
@@ -49,14 +49,15 @@ let one_epoch = function(W){
         Xb = X.slice([start, end]);
         H = nj.dot(Xb, W);
         Y = nj.dot(H, W.T);
-        L = Xb.subtract(Y).pow(2).sum();
-        
-        DY = Xb.subtract(Y).multiply(Xb).multiply(2);
+        L = Xb.subtract(Y).pow(2).sum() / Xb.shape[0];
+        //DY = Xb.subtract(Y).multiply(Xb).multiply(2);
+        DY = Y.subtract(X).multiply(2).divide(Xb.shape[0])
         DH = nj.dot(DY, W);
         DW1 = nj.dot(Xb.T, DH)
-        DW2 = nj.dot(H.T, DY).T
+        DW2 = nj.dot(DY.T, H)
         DW = DW1.add(DW2)
         // gradient with finite diff
+        /*
         for(m = 0; m < W.shape[0];m++){
             for(n = 0; n < W.shape[1];n++){
                 eps = 1e-7
@@ -68,19 +69,19 @@ let one_epoch = function(W){
                 
                 H = nj.dot(Xb, Wa);
                 Y = nj.dot(H, Wa.T);
-                La = Xb.subtract(Y).pow(2).sum();
+                La = Xb.subtract(Y).pow(2).sum() / Xb.shape[0];
 
                 H = nj.dot(Xb, Wb);
                 Y = nj.dot(H, Wb.T);
-                Lb = Xb.subtract(Y).pow(2).sum();
+                Lb = Xb.subtract(Y).pow(2).sum() / Xb.shape[0];
 
                 DW_fd = (Lb - La) / (2*eps)
                 delta = Math.abs(DW.get(m, n) - DW_fd)
                 console.log(delta)
                 //DW.set(m, n, DW_fd)
-
             }
         }
+        */
         W = W.subtract(DW.multiply(alpha));
     }
     H = nj.dot(X, W);
