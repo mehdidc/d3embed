@@ -50,6 +50,7 @@ function main(data){
     let yscale = d3.scaleLinear().domain([min[1], max[1]]).range([0, height]);
     //let color = d3.interpolateSpectral;
     let color = d3.scaleOrdinal(d3.schemeCategory10);
+
     svg.selectAll('circle')
         .data(d3.range(H.shape[0] - 1)) 
         .enter()
@@ -60,7 +61,6 @@ function main(data){
         .attr('fill', function(d, i){return color(y.get(d))})
         .append("svg:title")
           .text(function(d, i) { return y.get(d)});
-
     epochs = 0
     nb_epochs = 1000
     function fit(){
