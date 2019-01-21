@@ -19,12 +19,14 @@ let generateRandomData = function(nb){
     let data = []
     for (let i = 0; i < nb; i++) {
         x = Math.random() * 2 - 1;
-        y = x + normal() * 0.1;
+        y = x + normal() * 0.2;
         data.push([x, y]);
     }
     return data;
 }
 let data = generateRandomData(100);
+
+
 let svg = d3.select("svg").attr('width', width).attr('height', height);
 let circle = svg.selectAll('circle').data(data);
 circle.enter().append('circle')
@@ -41,7 +43,6 @@ let W = nj_normal([X.shape[1], embed_size]).multiply(0.01);
 let DW_sqr = nj.zeros(W.shape);
 let alpha = 0.01;
 let batch_size = X.shape[0];
-
 let one_epoch = function(W){
     for(i = 0; i < X.shape[0]; i+=batch_size){
         let start = i;
@@ -50,7 +51,6 @@ let one_epoch = function(W){
         H = nj.dot(Xb, W);
         Y = nj.dot(H, W.T);
         L = Xb.subtract(Y).pow(2).sum() / Xb.shape[0];
-        //DY = Xb.subtract(Y).multiply(Xb).multiply(2);
         DY = Y.subtract(X).multiply(2).divide(Xb.shape[0])
         DH = nj.dot(DY, W);
         DW1 = nj.dot(Xb.T, DH)
@@ -92,7 +92,7 @@ let one_epoch = function(W){
 }
 
 let cnt = 0;
-let nb_epochs = 100;
+let nb_epochs = 1000;
 function run(){
     cnt += 1
     if(cnt == nb_epochs){
